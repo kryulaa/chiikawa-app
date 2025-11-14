@@ -3,17 +3,19 @@ export class ChatBubble {
         this.message = "";
         this.isTyping = false;
         this.timer = 0;
-        this.duration = 3000; // bubble visible 3s
+        this.duration = 5000; // visible for 5s
+        this.maxWidth = 150;   // max bubble width for wrapping
     }
 
     startTyping() {
         this.isTyping = true;
         this.message = "";
+        this.timer = 0;
     }
 
     sendMessage() {
         this.isTyping = false;
-        this.timer = 0;
+        this.timer = 0; // reset timer to start countdown
     }
 
     handleKey(key) {
@@ -22,42 +24,70 @@ export class ChatBubble {
         else if (key.length === 1) this.message += key;
     }
 
+    setMessage(message) {
+        this.message = message;
+        this.timer = 0;       // start counting for display duration
+        this.isTyping = false;
+    }
+
     update(delta) {
+        // Only start countdown after typing finished or message set
         if (!this.isTyping && this.message.length > 0) {
             this.timer += delta;
-            if (this.timer > this.duration) this.message = "";
+            if (this.timer >= this.duration) {
+                this.message = "";
+                this.timer = 0;
+            }
         }
     }
 
-        draw(ctx, x, y) {
-        // Show nothing if no message and not typing
+    draw(ctx, x, y, nameHeight = 14, spriteHeight = 64) {
         if (!this.message && !this.isTyping) return;
 
-        const padding = 6;
-        const bubbleHeight = 15;
+        const paddingX = 8;
+        const paddingY = 4;
         const radius = 5;
 
         ctx.save();
-        ctx.imageSmoothingEnabled = true;
         ctx.font = "10px Arial";
-        ctx.textBaseline = "middle";
+        ctx.textBaseline = "top";
+        ctx.textAlign = "left";
+        ctx.imageSmoothingEnabled = true;
 
-        // Determine text to display
+        // Typing animation
         let displayText = this.message;
         if (this.isTyping) {
-            // Animate typing indicator "..."
-            const dotCount = Math.floor((Date.now() / 500) % 4); // 0 to 3 dots
-            displayText = displayText + ".".repeat(dotCount);
+            const dotCount = Math.floor((Date.now() / 500) % 4);
+            displayText += ".".repeat(dotCount);
         }
 
-        const textWidth = ctx.measureText(displayText).width;
-        const bubbleWidth = textWidth + padding * 2;
+        // Wrap long text
+        const words = displayText.split(" ");
+        const lines = [];
+        let currentLine = "";
+        for (let word of words) {
+            const testLine = currentLine ? currentLine + " " + word : word;
+            if (ctx.measureText(testLine).width > this.maxWidth && currentLine !== "") {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine) lines.push(currentLine);
 
-        // Round positions to integers for sharp edges
+        // Bubble size
+        let textWidth = 0;
+        lines.forEach(line => {
+            const w = ctx.measureText(line).width;
+            if (w > textWidth) textWidth = w;
+        });
+        const bubbleWidth = textWidth + paddingX * 2;
+        const bubbleHeight = lines.length * 12 + paddingY * 2;
+
+        // Bubble position above player
         const bx = Math.round(x - bubbleWidth / 2);
-        const by = Math.round(y - bubbleHeight);
-        const tx = Math.round(x - textWidth / 2);
-        const ty = Math.round(y - bubbleHeight / 2);
+        const by = Math.round(y - spriteHeight - nameHeight - bubbleHeight - 5);
 
         // Draw bubble
         ctx.fillStyle = "white";
@@ -70,7 +100,9 @@ export class ChatBubble {
 
         // Draw text
         ctx.fillStyle = "black";
-        ctx.fillText(displayText, tx, ty);
+        for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], bx + paddingX, by + paddingY + i * 12);
+        }
 
         ctx.restore();
     }
