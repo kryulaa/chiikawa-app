@@ -4,7 +4,9 @@ export class ChatBubble {
         this.isTyping = false;
         this.timer = 0;
         this.duration = 5000; // visible for 5s
-        this.maxWidth = 150;   // max bubble width for wrapping
+        this.maxWidth = 150;   // max bubble width for wrapping
+        // Add a placeholder to store the external local reference
+        this.isLocalPlayer = false; 
     }
 
     startTyping() {
@@ -26,7 +28,7 @@ export class ChatBubble {
 
     setMessage(message) {
         this.message = message;
-        this.timer = 0;       // start counting for display duration
+        this.timer = 0;       // start counting for display duration
         this.isTyping = false;
     }
 
@@ -42,7 +44,31 @@ export class ChatBubble {
     }
 
     draw(ctx, x, y, nameHeight = 14, spriteHeight = 64) {
-        if (!this.message && !this.isTyping) return;
+        let displayMessage = this.message;
+        let showTypingAnimation = false;
+        
+        // --- NEW LOGIC FOR TYPING ANIMATION CONTROL ---
+        if (this.isTyping) {
+            // 1. Local Player (or if you can't distinguish, default to always showing): 
+            // The local player always sees the typing progress.
+            if (this.isLocalPlayer) {
+                showTypingAnimation = true;
+            }
+            // 2. Remote Players: Only show typing if there is NO message currently visible.
+            else if (displayMessage.length === 0) {
+                showTypingAnimation = true;
+            }
+            
+            // If the typing animation is active, we should use the typing buffer content, 
+            // not the message content, especially for remote players.
+            // For remote players, displayMessage is already "" when showTypingAnimation is true.
+            if (!this.isLocalPlayer) {
+                 displayMessage = ""; 
+            }
+        }
+        // --- END NEW LOGIC ---
+
+        if (displayMessage.length === 0 && !showTypingAnimation) return;
 
         const paddingX = 8;
         const paddingY = 4;
@@ -54,11 +80,17 @@ export class ChatBubble {
         ctx.textAlign = "left";
         ctx.imageSmoothingEnabled = true;
 
-        // Typing animation
-        let displayText = this.message;
-        if (this.isTyping) {
+        // Apply typing animation (dots) to the displayed text
+        let displayText = displayMessage;
+        if (showTypingAnimation) {
             const dotCount = Math.floor((Date.now() / 500) % 4);
-            displayText += ".".repeat(dotCount);
+            if (displayText.length === 0) {
+                // If message is empty (remote player typing), just show dots
+                displayText = ".".repeat(dotCount);
+            } else {
+                // If message is present (local player typing), append dots to what they've written
+                displayText += ".".repeat(dotCount);
+            }
         }
 
         // Wrap long text

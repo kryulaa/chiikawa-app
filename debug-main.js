@@ -207,7 +207,7 @@ chiikawa.animations = createChiikawaAnimations();
 
 
 // ---------------------------
-// GAME STATE
+// GAME STATE (Includes position persistence fix)
 // ---------------------------
 const POSITION_KEY = 'chiikawaPosition';
 const savedPosition = localStorage.getItem(POSITION_KEY);
@@ -217,10 +217,17 @@ const chiikawaPos = new Vector2(initialPos.x, initialPos.y);
 const input = new Input();
 let lastDirection = "RIGHT";
 
+// Globalized dx and dy for access in the draw function (for debugging)
 let dx = 0; 
 let dy = 0;
 
-let myName = null; 
+// Get/Set Name from Local Storage
+const savedName = localStorage.getItem('myPlayerName');
+const myName = savedName || "Player" + Math.floor(Math.random() * 1000);
+if (!savedName) {
+    localStorage.setItem('myPlayerName', myName);
+}
+
 const chatBubble = new ChatBubble();
 
 // Command state and map
@@ -240,7 +247,7 @@ const COMMAND_MAP = {
 const camera = new Camera(canvas.width, canvas.height);
 
 // ---------------------------
-// MULTIPLAYER SETUP
+// MULTIPLAYER
 // ---------------------------
 const MY_PLAYER_ID_KEY = "myPlayerId";
 let myId = localStorage.getItem(MY_PLAYER_ID_KEY);
@@ -258,15 +265,9 @@ function createOtherPlayerSprite() {
 }
 
 // ---------------------------
-// INIT PLAYER 
+// INIT PLAYER
 // ---------------------------
 async function initPlayer() {
-    // Ensure myName is set before upserting
-    if (!myName) {
-        console.error("Player name is not set!");
-        return;
-    }
-
     const { error } = await supabase.from("players").upsert([{
         id: myId,
         x: chiikawaPos.x,
@@ -441,8 +442,8 @@ const update = (delta) => {
         p.position.x += dx * INTERPOLATION_FACTOR;
         p.position.y += dy * INTERPOLATION_FACTOR;
 
-        p.facing = dx < -0.1 ? "LEFT" : dx > 0.1 ? "RIGHT" : p.facing;
         const moving = Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5;
+        p.facing = dx < -0.1 ? "LEFT" : dx > 0.1 ? "RIGHT" : p.facing;
 
         if (p.commandAnimation) {
             p.sprite.animations.play(p.commandAnimation);
@@ -468,7 +469,7 @@ const update = (delta) => {
                     y: Math.round(chiikawaPos.y)
                 }));
 
-                // 1. Send our player state (UPDATED: Added last_seen_at for heartbeat)
+                // 1. Send our player state
                 const { error: upsertError } = await supabase.from("players").upsert([{
                     id: myId,
                     x: Math.round(chiikawaPos.x),
@@ -476,29 +477,18 @@ const update = (delta) => {
                     facing: lastDirection,
                     name: myName,
                     is_typing: chatBubble.isTyping,
-                    command_animation: currentCommandAnimation,
-                    // 💡 HEARTBEAT: Add timestamp to track last activity
-                    last_seen_at: new Date().toISOString()
+                    command_animation: currentCommandAnimation
                 }], { onConflict: 'id' }); 
 
                 if (upsertError) {
                        console.error("Supabase upsert failed:", upsertError);
                 }
 
-                // 2. Fetch other players (UPDATED: Filtering for active players)
-                // Only fetch players who have updated in the last 10 seconds (50x the 200ms update rate)
-                const TEN_SECONDS_AGO = new Date(Date.now() - 10000).toISOString();
-                
-                const { data, error } = await supabase.from("players")
-                    .select("*")
-                    .neq("id", myId)
-                    .gt("last_seen_at", TEN_SECONDS_AGO); // 💡 TIMEOUT FILTER
-
+                // 2. Fetch other players
+                const { data, error } = await supabase.from("players").select("*").neq("id", myId);
                 if (error) return console.error("Supabase fetch error:", error);
 
                 const activeIds = data.map(p => p.id);
-                // Filter out any players who no longer exist in the database (explicit delete)
-                // OR are stale (filtered by the .gt() query above)
                 otherPlayers = otherPlayers.filter(p => activeIds.includes(p.id));
 
                 // 3. Update or add players
@@ -583,7 +573,7 @@ const draw = () => {
 
     // Loop through sorted entities and draw them
     entitiesToDraw.forEach(entity => {
-        const { drawX, drawY, sprite, shadow, facing, name, chat, frameSize } = entity;
+        const { type, drawX, drawY, sprite, shadow, facing, name, chat, frameSize } = entity;
         const nameYOffset = 8;
         
         // 1. Draw Shadow
@@ -612,7 +602,32 @@ const draw = () => {
         ctx.fillStyle = 'white';
         ctx.fillText(name, drawX + frameSize.x / 2, nameY);
         
-        // 4. Draw Chat Bubble
+        // 4. Draw Debug Text (Local Player Only)
+        if (type === 'local') {
+            let debugText; 
+            if (currentCommandAnimation) {
+                debugText = currentCommandAnimation;
+            } else {
+                if (dx !== 0 || dy !== 0) {
+                    debugText = lastDirection === "LEFT" ? "walkLeft" : "walkRight";
+                } else {
+                    debugText = lastDirection === "LEFT" ? "standLeft" : "standRight";
+                }
+            }
+            
+            const debugY = nameY - 12; 
+            ctx.textAlign = 'center';
+            ctx.font = '7px monospace'; 
+
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1.5;
+            ctx.strokeText(`STATE: ${debugText}`, drawX + frameSize.x / 2, debugY);
+
+            ctx.fillStyle = 'yellow'; 
+            ctx.fillText(`STATE: ${debugText}`, drawX + frameSize.x / 2, debugY);
+        }
+
+        // 5. Draw Chat Bubble
         if (chat) chat.draw(ctx, drawX + frameSize.x / 2, nameY, 8, frameSize.y);
     });
 };
@@ -674,78 +689,7 @@ window.addEventListener("keyup", (e) => {
 });
 
 // ---------------------------
-// DISCONNECT HANDLER (Explicit Delete)
+// START GAME
 // ---------------------------
-
-async function cleanupPlayer() {
-    // Only run if myId is set
-    if (!myId) return;
-
-    try {
-        // Explicitly DELETE the player record from the Supabase table
-        const { error } = await supabase.from('players')
-            .delete()
-            .eq('id', myId);
-
-        if (error) {
-            console.error("Supabase cleanupPlayer delete failed:", error);
-        } else {
-            console.log(`Player ${myName} (${myId}) disconnected and removed.`);
-        }
-    } catch (err) {
-        // This handles potential network issues during unload
-        console.warn("Cleanup attempt failed (network error or closing too fast):", err);
-    }
-}
-
-// Attach the cleanup function to the window's unload event
-window.addEventListener("beforeunload", (e) => {
-    // This function runs the async cleanup, but the browser may not wait for completion.
-    // The Heartbeat Timeout handles this unreliability.
-    cleanupPlayer();
-    
-    // Returning null is the standard way to allow the unload to proceed
-    return null;
-});
-
-
-// ---------------------------
-// NAME PROMPT AND START GAME
-// ---------------------------
-async function setupPlayerName() {
-    const savedName = localStorage.getItem('myPlayerName');
-    let playerName = savedName;
-
-    if (!savedName) {
-        // Request name if not found in local storage
-        do {
-            playerName = prompt("Please enter your player name (max 12 characters):", "Player");
-            
-            if (playerName === null) {
-                // User cancelled, use a default name
-                playerName = "Player" + Math.floor(Math.random() * 1000);
-                break;
-            }
-            
-            // Sanitize and limit length
-            playerName = playerName.trim().substring(0, 12);
-            
-            if (playerName.length === 0) {
-                // Re-prompt if they entered nothing
-                alert("Name cannot be empty. Please try again.");
-            }
-            
-        } while (playerName.length === 0);
-        
-        // Save the chosen name
-        localStorage.setItem('myPlayerName', playerName);
-    }
-
-    myName = playerName; // Set the global myName variable
-
-    await initPlayer();
-    gameLoop.start();
-}
-
 const gameLoop = new Gameloop(update, draw);
-setupPlayerName();
+initPlayer().then(() => gameLoop.start());

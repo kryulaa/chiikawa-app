@@ -1,75 +1,70 @@
 // chiikawaAnimations.js
 
-// --- Base Frame Calculation Functions ---
+// ===============================
+// === Base Frame Generators =====
+// ===============================
 
-// Standing/Idle frames (200ms per frame for a slower idle).
+// Standing/Idle = slower (200ms per frame)
 const makeStandingFrames = (startFrame, count) => ({
-  duration: count * 200, // 200ms per frame
-  frames: Array.from({ length: count }, (_, i) => ({
-    time: i * 200,
-    frame: startFrame + i
-  }))
+    duration: count * 200,
+    frames: Array.from({ length: count }, (_, i) => ({
+        time: i * 200,
+        frame: startFrame + i
+    }))
 });
 
-// Walking/Fast transition frames (100ms per frame).
+// Walking / transitions / sequences = faster (100ms per frame)
 const makeWalkingFrames = (startFrame, count) => {
-  const frameDuration = 100;
-  const duration = count * frameDuration;
-  return {
-    duration: duration,
-    frames: Array.from({ length: count }, (_, i) => ({
-      time: i * frameDuration,
-      frame: startFrame + i
-    }))
-  };
+    const ms = 100;
+    return {
+        duration: count * ms,
+        frames: Array.from({ length: count }, (_, i) => ({
+            time: i * ms,
+            frame: startFrame + i
+        }))
+    };
 };
 
-// --- STANDARD MOVEMENTS ---
 
-// STANDING: Frames 1 through 8.
+// ===============================
+// === CHIIKAWA MAIN ANIMATIONS ===
+// ===============================
+
+// STAND (frames 0–7)   → 8 frames
 export const STAND_RIGHT = makeStandingFrames(0, 8);
-export const STAND_LEFT = STAND_RIGHT;
+export const STAND_LEFT   = STAND_RIGHT;
 
-// WALKING: Frames 9-24.
-export const WALK_RIGHT = makeWalkingFrames(9, 16);
-export const WALK_LEFT = WALK_RIGHT;
 
-// PICK_UP: (Using first standing frame, frame 1)
-export const PICK_UP_RIGHT = { duration: 400, frames: [{ time: 0, frame: 1 }] };
-export const PICK_UP_LEFT = PICK_UP_RIGHT;
+// WALK (frames 8–23) → 16 frames
+export const WALK_RIGHT = makeWalkingFrames(8, 16);
+export const WALK_LEFT  = WALK_RIGHT;
 
-// --- COMMAND ANIMATIONS ---
 
-// SIT (Transition to sit): Frames 25 through 32. Uses 100ms frames (800ms total).
-export const SIT = makeWalkingFrames(25, 32); 
+// ===============================
+// === COMMAND ANIMATIONS ========
+// ===============================
 
-// SIT_IDLE (Static last frame of sitting animation): Frame 32.
-export const SIT_IDLE = { 
-    duration: 100, // Duration is arbitrary for a single frame
-    frames: [{ time: 0, frame: 32 }] 
+// SIT (frames 24–31) → 8 frames (The transition down to sitting pose)
+export const SIT = makeWalkingFrames(24, 9);
+
+
+// SIT_LOOP: Rapid loop between frames 30 and 31 (40ms per frame, 80ms total loop duration)
+export const SIT_LOOP = {
+    duration: 80, 
+    frames: [
+        { time: 0,   frame: 30 }, 
+        { time: 40,  frame: 31 }  // Final sitting frame
+    ]
 };
 
-// SIT_TO_STAND: Frames 33 through 40.
-export const SIT_TO_STAND = makeWalkingFrames(33, 40); // 800ms total duration
 
-// CRY: Frame definitions unchanged.
-export const CRY = {
-  duration: 800,
-  frames: [
-    { time: 0, frame: 14 },
-    { time: 200, frame: 15 },
-    { time: 400, frame: 14 },
-    { time: 600, frame: 16 }
-  ]
-};
+// SIT_TO_STAND (frames 32–39) → 8 frames
+export const SIT_TO_STAND = makeWalkingFrames(32, 8);
 
-// DANCE: Frame definitions unchanged.
-export const DANCE = {
-  duration: 640,
-  frames: [
-    { time: 0, frame: 21 }, { time: 80, frame: 22 },
-    { time: 160, frame: 23 }, { time: 240, frame: 22 },
-    { time: 320, frame: 21 }, { time: 400, frame: 20 },
-    { time: 480, frame: 19 }, { time: 560, frame: 20 }
-  ]
-};
+
+// CRY (frames 41–56) → 16 frames (New definition as requested)
+export const CRY = makeWalkingFrames(40, 16);
+
+
+// DANCE (frames 57–72) → 16 frames (New definition as requested)
+export const DANCE = makeWalkingFrames(57, 15);
