@@ -10,7 +10,7 @@
     <div class="overlay"></div>
     
     <div id="main-content">
-        <div class="game-container" id="login-screen">
+        <div class="game-container" id="game-viewport"> 
             
             <div class="game-header">
                 <h1 class="game-title">Chiikawa Nature</h1>
@@ -86,7 +86,8 @@
 
     <script>
         // DOM Elements
-        const loginScreen = document.getElementById('login-screen'); 
+        // Renamed 'login-screen' to 'game-viewport' for clarity, though it's the same element.
+        const gameViewport = document.getElementById('game-viewport'); 
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const forgotPasswordForm = document.getElementById('forgot-password-form');
@@ -119,28 +120,36 @@
         
         /**
          * Function to load your game content in fullscreen after login.
+         * NOW uses Dynamic Import for main.js.
          */
         function loadGame() {
             // 1. Clean the environment for full screen
-            if (overlay) overlay.remove(); // Remove the white overlay
+            if (overlay) overlay.remove(); 
             
             // 2. Apply full-screen class to body and container
             document.body.classList.add('game-active');
-            loginScreen.classList.add('full-screen');
+            gameViewport.classList.add('full-screen');
             
-            // 3. Remove login-specific elements (header, footer, forms) by clearing container content
-            loginScreen.innerHTML = ''; 
+            // 3. Remove login-specific elements by clearing container content
+            gameViewport.innerHTML = ''; 
 
             // 4. Inject the canvas element (using 1280x720 aspect ratio)
-            loginScreen.innerHTML = `
+            gameViewport.innerHTML = `
                 <canvas id="game-canvas" width="1280" height="720"></canvas>
             `;
             
-            // 5. Dynamically load the main.js module
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = 'main.js';
-            document.body.appendChild(script);
+            // 5. Use Dynamic Import to load the main.js module
+            // This is the robust solution for loading modules on deployment platforms like Vercel.
+            import('./main.js')
+                .then(module => {
+                    console.log('Game module loaded successfully!');
+                    // If main.js has an init function, you would call it here:
+                    // module.init(); 
+                })
+                .catch(error => {
+                    console.error('Failed to load main.js module:', error);
+                    alert('An error occurred loading the game resources.');
+                });
         }
 
         // Login Button Logic - Calls loadGame() on success
