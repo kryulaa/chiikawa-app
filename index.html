@@ -121,27 +121,23 @@
          * Function to load your game content in fullscreen after login.
          */
         function loadGame() {
-            // 1. Clean the environment for full screen
-            if (overlay) overlay.remove(); // Remove the white overlay
-            
-            // 2. Apply full-screen class to body and container
-            document.body.classList.add('game-active');
-            loginScreen.classList.add('full-screen');
-            
-            // 3. Remove login-specific elements (header, footer, forms) by clearing container content
-            loginScreen.innerHTML = ''; 
+    if (overlay) overlay.remove();
 
-            // 4. Inject the canvas element (using 1280x720 aspect ratio)
-            loginScreen.innerHTML = `
-                <canvas id="game-canvas" width="1280" height="720"></canvas>
-            `;
-            
-            // 5. Dynamically load the main.js module
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = './main.js';
-            document.body.appendChild(script);
-        }
+    document.body.classList.add('game-active');
+    loginScreen.classList.add('full-screen');
+    loginScreen.innerHTML = `
+        <canvas id="game-canvas" width="1280" height="720"></canvas>
+    `;
+
+    const script = document.createElement('script');
+    script.type = 'module';
+
+    // Prevent browser caching + ensure correct path
+    script.src = new URL('main.js', window.location.href).href + '?v=' + Date.now();
+
+    document.body.appendChild(script);
+}
+
 
         // Login Button Logic - Calls loadGame() on success
         loginBtn.addEventListener('click', function() {
