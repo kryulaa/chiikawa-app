@@ -125,18 +125,19 @@
 
     document.body.classList.add('game-active');
     loginScreen.classList.add('full-screen');
-    loginScreen.innerHTML = `
-        <canvas id="game-canvas" width="1280" height="720"></canvas>
-    `;
+    loginScreen.innerHTML = `<canvas id="game-canvas" width="1280" height="720"></canvas>`;
 
     const script = document.createElement('script');
     script.type = 'module';
 
-    // Prevent browser caching + ensure correct path
-    script.src = new URL('main.js', window.location.href).href + '?v=' + Date.now();
+    // Auto-resolve correct path relative to index.html
+    script.src = new URL('main.js', document.location).pathname;
+
+    console.log("Trying to load:", script.src);
 
     document.body.appendChild(script);
 }
+
 
 
         // Login Button Logic - Calls loadGame() on success
