@@ -8,17 +8,17 @@
 </head>
 <body>
     <div class="overlay"></div>
-    
+
     <div id="main-content">
         <div class="game-container" id="login-screen">
-            
+            <!-- HEADER -->
             <div class="game-header">
                 <h1 class="game-title">Chiikawa Nature</h1>
                 <p class="game-subtitle">Join the forest adventure with your friends!</p>
             </div>
-            
+
+            <!-- FORM CONTAINER -->
             <div class="form-container">
-                
                 <!-- LOGIN FORM -->
                 <div id="login-form">
                     <div class="form-group">
@@ -77,6 +77,7 @@
                     </div>
                 </div>
 
+                <!-- SUCCESS MESSAGE -->
                 <div id="success-message" class="message success hidden">
                     Password reset link sent! Please check your email.
                 </div>
@@ -84,17 +85,15 @@
         </div>
     </div>
 
-    <!-- LOGIN / UI SCRIPT -->
-    <script>
-        // DOM Elements
+    <!-- SCRIPT -->
+    <script type="module">
         const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const forgotPasswordForm = document.getElementById('forgot-password-form');
         const successMessage = document.getElementById('success-message');
         const overlay = document.querySelector('.overlay');
-        
-        // Toggle Links
+
         const showRegisterLink = document.getElementById('show-register');
         const showLoginLink = document.getElementById('show-login');
         const forgotPasswordLink = document.getElementById('forgot-password-link');
@@ -102,45 +101,36 @@
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
         const resetPasswordBtn = document.getElementById('reset-password-btn');
-        
-        // Function to switch forms
-        function showForm(formToShow) {
+
+        function showForm(form) {
             loginForm.classList.add('hidden');
             registerForm.classList.add('hidden');
             forgotPasswordForm.classList.add('hidden');
             successMessage.classList.add('hidden');
-            formToShow.classList.remove('hidden');
+            form.classList.remove('hidden');
         }
 
-        // Event listeners
-        showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showForm(registerForm); });
-        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
-        forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); showForm(forgotPasswordForm); });
-        backToLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
-        
-        /**
-         * Load the actual game (Vite + Vercel compatible)
-         */
+        showRegisterLink.addEventListener('click', e => { e.preventDefault(); showForm(registerForm); });
+        showLoginLink.addEventListener('click', e => { e.preventDefault(); showForm(loginForm); });
+        forgotPasswordLink.addEventListener('click', e => { e.preventDefault(); showForm(forgotPasswordForm); });
+        backToLoginLink.addEventListener('click', e => { e.preventDefault(); showForm(loginForm); });
+
         function loadGame() {
             if (overlay) overlay.remove();
-
             document.body.classList.add('game-active');
             loginScreen.classList.add('full-screen');
             loginScreen.innerHTML = `<canvas id="game-canvas" width="1280" height="720"></canvas>`;
 
-            // Load the game entrypoint (Vite style)
-            const script = document.createElement("script");
-script.type = "module";
-script.src = "/game/main.js"; 
-document.body.appendChild(script);
-
+            // Load main.js via Vite
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = '/main.js'; // Vite will bundle it correctly
+            document.body.appendChild(script);
         }
 
-        // LOGIN LOGIC
-        loginBtn.addEventListener('click', function() {
+        loginBtn.addEventListener('click', () => {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
-            
             if (username && password) {
                 alert(`Welcome back, ${username}! Starting your adventure...`);
                 loadGame();
@@ -149,16 +139,15 @@ document.body.appendChild(script);
             }
         });
 
-        // REGISTER LOGIC
-        registerBtn.addEventListener('click', function() {
-            const user = document.getElementById('register-username').value;
+        registerBtn.addEventListener('click', () => {
+            const username = document.getElementById('register-username').value;
             const email = document.getElementById('register-email').value;
-            const pass = document.getElementById('register-password').value;
-            const confirm = document.getElementById('register-confirm-password').value;
-            
-            if (user && email && pass && confirm) {
-                if (pass === confirm) {
-                    alert(`Welcome to Chiikawa Nature, ${user}! Your account is ready!`);
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+
+            if (username && email && password && confirmPassword) {
+                if (password === confirmPassword) {
+                    alert(`Welcome to Chiikawa Nature, ${username}! Your account is ready!`);
                     showForm(loginForm);
                 } else {
                     alert('Passwords do not match. Please try again!');
@@ -168,10 +157,8 @@ document.body.appendChild(script);
             }
         });
 
-        // RESET PASSWORD LOGIC
-        resetPasswordBtn.addEventListener('click', function() {
+        resetPasswordBtn.addEventListener('click', () => {
             const email = document.getElementById('forgot-email').value;
-            
             if (email) {
                 showForm(successMessage);
                 setTimeout(() => {
