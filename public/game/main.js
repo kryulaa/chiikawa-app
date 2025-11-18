@@ -1,13 +1,13 @@
-import { Gameloop } from './core/Gameloop.js';
-import { update, currentCommandAnimation, commandAnimationTime } from './game/GameLoopLogic.js';
-import { draw } from './ui/DrawLogic.js';
-import { setupPlayerName } from './multiplayer/PlayerSetup.js';
+import { Gameloop } from '../../src/core/Gameloop.js';
+import { update, currentCommandAnimation, commandAnimationTime } from '../../src/game/GameLoopLogic.js';
+import { draw } from '../../src/ui/DrawLogic.js';
+import { setupPlayerName } from '../../src/multiplayer/PlayerSetup.js';
 
 // Import and execute setup modules (no assignment needed)
-import './ui/CanvasSetup.js';
-import './game/GameObjects.js';
-import './multiplayer/Networking.js';
-import './game/InputHandler.js'; 
+import '../../src/ui/CanvasSetup.js';
+import '../../src/game/GameObjects.js';
+import '../../src/multiplayer/Networking.js';
+import '../../src/game/InputHandler.js'; 
 
 
 // ---------------------------

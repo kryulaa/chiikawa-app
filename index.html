@@ -129,10 +129,11 @@
             loginScreen.innerHTML = `<canvas id="game-canvas" width="1280" height="720"></canvas>`;
 
             // Load the game entrypoint (Vite style)
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = '/src/main.js';  // IMPORTANT: Vite-compatible path
-            document.body.appendChild(script);
+            const script = document.createElement("script");
+script.type = "module";
+script.src = "/game/main.js"; 
+document.body.appendChild(script);
+
         }
 
         // LOGIN LOGIC

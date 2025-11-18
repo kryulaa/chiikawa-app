@@ -1,4 +1,4 @@
-import { supabase } from '../../supabaseClient.js';
+import { supabase } from '../../public/game/supabaseClient.js';
 import { v4 as uuidv4 } from 'uuid';
 import { Vector2 } from '../core/Vector2.js';
 import { resources } from '../core/Resources.js';

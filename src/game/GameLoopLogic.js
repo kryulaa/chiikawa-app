@@ -2,7 +2,7 @@ import { Input } from '../core/Input.js';
 import { Camera } from '../core/Camera.js';
 import { chiikawaPos, otherPlayers, myId, myName, chatBubble, POSITION_KEY, createOtherPlayerSprite } from '../multiplayer/PlayerSetup.js';
 import { chiikawaSprite } from './GameObjects.js';
-import { supabase } from '../../supabaseClient.js';
+import { supabase } from '../../public/game/supabaseClient.js';
 import { Vector2 } from '../core/Vector2.js';
 import { canvas } from '../ui/CanvasSetup.js';
 import { ChatBubble } from '../ui/ChatBubble.js';
