@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chiikawa Nature Adventure</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
     <div class="overlay"></div>
@@ -18,6 +18,8 @@
             </div>
             
             <div class="form-container">
+                
+                <!-- LOGIN FORM -->
                 <div id="login-form">
                     <div class="form-group">
                         <label for="login-username">Username</label>
@@ -35,7 +37,8 @@
                         New to Chiikawa World? <a href="#" id="show-register">Create Account</a>
                     </div>
                 </div>
-                
+
+                <!-- REGISTER FORM -->
                 <div id="register-form" class="hidden">
                     <div class="form-group">
                         <label for="register-username">Username</label>
@@ -58,7 +61,8 @@
                         Already have an account? <a href="#" id="show-login">Login Here</a>
                     </div>
                 </div>
-                
+
+                <!-- FORGOT PASSWORD FORM -->
                 <div id="forgot-password-form" class="hidden">
                     <div class="message">
                         Enter your email address and we'll send you a link to reset your password.
@@ -72,28 +76,25 @@
                         Remember your password? <a href="#" id="back-to-login">Back to Login</a>
                     </div>
                 </div>
-                
+
                 <div id="success-message" class="message success hidden">
                     Password reset link sent! Please check your email.
                 </div>
             </div>
-            
-            <div class="game-footer">
-                <p></p>
-            </div>
         </div>
     </div>
 
+    <!-- LOGIN / UI SCRIPT -->
     <script>
         // DOM Elements
-        const loginScreen = document.getElementById('login-screen'); 
+        const loginScreen = document.getElementById('login-screen');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const forgotPasswordForm = document.getElementById('forgot-password-form');
         const successMessage = document.getElementById('success-message');
         const overlay = document.querySelector('.overlay');
         
-        // Toggle Links and Buttons
+        // Toggle Links
         const showRegisterLink = document.getElementById('show-register');
         const showLoginLink = document.getElementById('show-login');
         const forgotPasswordLink = document.getElementById('forgot-password-link');
@@ -111,60 +112,53 @@
             formToShow.classList.remove('hidden');
         }
 
-        // Event Listeners for switching forms
+        // Event listeners
         showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showForm(registerForm); });
         showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
         forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); showForm(forgotPasswordForm); });
         backToLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
         
         /**
-         * Function to load your game content in fullscreen after login.
+         * Load the actual game (Vite + Vercel compatible)
          */
         function loadGame() {
-    if (overlay) overlay.remove();
+            if (overlay) overlay.remove();
 
-    document.body.classList.add('game-active');
-    loginScreen.classList.add('full-screen');
-    loginScreen.innerHTML = `<canvas id="game-canvas" width="1280" height="720"></canvas>`;
+            document.body.classList.add('game-active');
+            loginScreen.classList.add('full-screen');
+            loginScreen.innerHTML = `<canvas id="game-canvas" width="1280" height="720"></canvas>`;
 
-    const script = document.createElement('script');
-    script.type = 'module';
+            // Load the game entrypoint (Vite style)
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = '/src/main.js';  // IMPORTANT: Vite-compatible path
+            document.body.appendChild(script);
+        }
 
-    // Auto-resolve correct path relative to index.html
-    script.src = new URL('main.js', document.location).pathname;
-
-    console.log("Trying to load:", script.src);
-
-    document.body.appendChild(script);
-}
-
-
-
-        // Login Button Logic - Calls loadGame() on success
+        // LOGIN LOGIC
         loginBtn.addEventListener('click', function() {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
             
             if (username && password) {
-                // *** Simulate Server success ***
                 alert(`Welcome back, ${username}! Starting your adventure...`);
-                loadGame(); 
+                loadGame();
             } else {
                 alert('Please fill in all fields to continue your adventure!');
             }
         });
-        
-        // Register Button Logic
+
+        // REGISTER LOGIC
         registerBtn.addEventListener('click', function() {
-            const username = document.getElementById('register-username').value;
+            const user = document.getElementById('register-username').value;
             const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const confirmPassword = document.getElementById('register-confirm-password').value;
+            const pass = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm-password').value;
             
-            if (username && email && password && confirmPassword) {
-                if (password === confirmPassword) {
-                    alert(`Welcome to Chiikawa Nature, ${username}! Your account is ready!`);
-                    showForm(loginForm); 
+            if (user && email && pass && confirm) {
+                if (pass === confirm) {
+                    alert(`Welcome to Chiikawa Nature, ${user}! Your account is ready!`);
+                    showForm(loginForm);
                 } else {
                     alert('Passwords do not match. Please try again!');
                 }
@@ -172,8 +166,8 @@
                 alert('Please fill in all fields to join the adventure!');
             }
         });
-        
-        // Reset Password Button Logic
+
+        // RESET PASSWORD LOGIC
         resetPasswordBtn.addEventListener('click', function() {
             const email = document.getElementById('forgot-email').value;
             
