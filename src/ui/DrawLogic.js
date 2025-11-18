@@ -1,191 +1,143 @@
+// src/ui/DrawLogic.js
+
 import { chiikawaSprite, shadow, waterSprite, islandSprite } from '../game/GameObjects.js';
 import { chiikawaPos, myName, chatBubble, otherPlayers } from '../multiplayer/PlayerSetup.js';
-import { camera, portalLocation, gameTimerSeconds, playersInPortalCount } from '../game/GameLoopLogic.js';
-import { ctx, canvas } from './CanvasSetup.js';
+import { portalLocation, gameTimerSeconds, playersInPortalCount } from '../game/GameLoopLogic.js';
 
-export const draw = () => {
+export const draw = (ctx, canvas, camera) => {
+    if (!ctx || !canvas || !camera || !chiikawaSprite) return; // safety check
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Background Elements (Water and Island)
+    // Draw Background Elements
     waterSprite.drawImage(ctx, -camera.position.x, -camera.position.y);
     islandSprite.drawImage(ctx, -camera.position.x, -camera.position.y);
 
     // --- Draw the Portal Area ---
     const playerCount = playersInPortalCount.value;
     const maxPlayers = 20;
-
-    // The portal should be drawn relative to the camera position
     const portalScreenX = portalLocation.x - camera.position.x;
     const portalScreenY = portalLocation.y - camera.position.y;
 
     ctx.save();
-    ctx.fillStyle = 'rgba(100, 150, 255, 0.5)'; // Translucent blue/purple
+    ctx.fillStyle = 'rgba(100, 150, 255, 0.5)';
     ctx.strokeStyle = '#4A90E2';
     ctx.lineWidth = 4;
-    
-    // Draw the main portal area (rectangle)
     ctx.fillRect(portalScreenX, portalScreenY, portalLocation.width, portalLocation.height);
     ctx.strokeRect(portalScreenX, portalScreenY, portalLocation.width, portalLocation.height);
 
-    // Add the new READY COUNT label inside the portal
-    const portalReadyText = `READY: ${playerCount}/${maxPlayers}`;
-
+    // READY count
     ctx.textAlign = 'center';
-    ctx.font = 'bold 16px monospace'; 
-    ctx.fillStyle = (playerCount === maxPlayers) ? '#F87171' : 'white'; // Change color when full
+    ctx.font = 'bold 16px monospace';
+    ctx.fillStyle = playerCount === maxPlayers ? '#F87171' : 'white';
     ctx.shadowColor = 'black';
     ctx.shadowBlur = 4;
-    ctx.fillText(
-        portalReadyText, 
-        portalScreenX + portalLocation.width / 2, 
-        portalScreenY + portalLocation.height / 2
-    );
-    
-    // Add timer text below the READY count inside the portal if running
+    ctx.fillText(`READY: ${playerCount}/${maxPlayers}`, portalScreenX + portalLocation.width / 2, portalScreenY + portalLocation.height / 2);
+
+    // Timer inside portal
     if (playerCount > 0) {
         const timerValue = Math.max(0, gameTimerSeconds.value);
-        const timerText = timerValue.toFixed(1);
-
         ctx.font = 'bold 24px monospace';
-        ctx.fillStyle = '#FFDD55'; // Yellow timer color
-        
-        ctx.fillText(
-            timerText, 
-            portalScreenX + portalLocation.width / 2, 
-            portalScreenY + portalLocation.height / 2 + 30 // Displayed slightly lower
-        );
+        ctx.fillStyle = '#FFDD55';
+        ctx.fillText(timerValue.toFixed(1), portalScreenX + portalLocation.width / 2, portalScreenY + portalLocation.height / 2 + 30);
     }
-    
     ctx.restore();
 
+    // --- Prepare Entities to Draw ---
     const entitiesToDraw = [];
 
-    // --- Prepare Local Player Data ---
-    // We are relying on chiikawaSprite.hFlip being set in GameLoopLogic.js
+    // Local player
     entitiesToDraw.push({
         y: chiikawaPos.y,
         drawX: chiikawaPos.x - camera.position.x - chiikawaSprite.frameSize.x / 2,
         drawY: chiikawaPos.y - camera.position.y - chiikawaSprite.frameSize.y / 2,
         sprite: chiikawaSprite,
         shadow: shadow,
-        // Use sprite's internal flip state to derive facing direction for manual draw flip
-        facing: chiikawaSprite.hFlip ? "LEFT" : "RIGHT", 
+        facing: chiikawaSprite.hFlip ? "LEFT" : "RIGHT",
         name: myName,
         chat: chatBubble,
         frameSize: chiikawaSprite.frameSize
     });
 
-    // --- Prepare Other Players Data ---
+    // Remote players
     otherPlayers.forEach(p => {
+        if (!p.sprite) return;
         entitiesToDraw.push({
             y: p.position.y,
             drawX: p.position.x - camera.position.x - p.sprite.frameSize.x / 2,
             drawY: p.position.y - camera.position.y - p.sprite.frameSize.y / 2,
             sprite: p.sprite,
             shadow: shadow,
-            facing: p.facing, // Remote player facing is driven by network state
+            facing: p.facing,
             name: p.name,
             chat: p.chat,
             frameSize: p.sprite.frameSize
         });
     });
 
-    // Sort by Y position for depth (painter's algorithm)
+    // Sort for depth
     entitiesToDraw.sort((a, b) => a.y - b.y);
 
-    // --- Draw Sorted Entities ---
+    // --- Draw entities ---
     entitiesToDraw.forEach(entity => {
         const { drawX, drawY, sprite, shadow, facing, name, chat, frameSize } = entity;
-        const nameYOffset = 8;
-        
-        // 1. Draw Shadow
+
+        // Draw shadow
         shadow.drawImage(ctx, drawX, drawY);
 
-        // 2. Draw Sprite (with Canvas Flip Transformation)
+        // Draw sprite
         ctx.save();
         if (facing === "LEFT") {
-            // Translate the origin to the center of the sprite
             ctx.translate(drawX + frameSize.x / 2, drawY + frameSize.y / 2);
-            
-            // Apply horizontal scaling (flip)
             ctx.scale(-1, 1);
-            
-            // Draw the sprite, offset to center it after the transformation
             sprite.drawImage(ctx, -frameSize.x / 2, -frameSize.y / 2);
         } else {
-            // Draw normally
             sprite.drawImage(ctx, drawX, drawY);
         }
         ctx.restore();
 
-        // 3. Draw Name
+        // Draw name
         ctx.textAlign = 'center';
         ctx.font = 'bold 8px monospace';
-        const nameY = drawY + nameYOffset;
         const nameX = drawX + frameSize.x / 2;
-
+        const nameY = drawY + 8;
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2;
         ctx.strokeText(name, nameX, nameY);
-
         ctx.fillStyle = 'white';
         ctx.fillText(name, nameX, nameY);
-        
-        // 4. Draw Chat Bubble
+
+        // Draw chat bubble
         if (chat) chat.draw(ctx, nameX, nameY, 8, frameSize.y);
     });
 
-    // --- Draw Player Count Indicator and Timer (Top Right HUD) ---
-    // Only display the HUD indicators if at least one player is ready
+    // --- Top-right HUD ---
     if (playerCount > 0) {
         const countText = `Ready: ${playerCount}/${maxPlayers}`;
-
         ctx.save();
-        
         const margin = 10;
         const indicatorX = canvas.width - margin;
-        
-        // 1. Draw Player Count (Ready Indicator)
+        const countY = margin + 16;
+
+        // Player count
         ctx.textAlign = 'right';
         ctx.font = 'bold 16px monospace';
-        const countY = margin + 16; 
-
-        // Draw text with black stroke for visibility against any background
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 3;
         ctx.strokeText(countText, indicatorX, countY);
-
-        // Color the text based on capacity
-        if (playerCount >= maxPlayers) {
-            ctx.fillStyle = '#F87171'; // Red (Full)
-        } else if (playerCount >= maxPlayers / 2) {
-            ctx.fillStyle = '#FBBF24'; // Yellowish
-        } else {
-            ctx.fillStyle = '#6EE7B7'; // Greenish
-        }
+        ctx.fillStyle = playerCount >= maxPlayers ? '#F87171' : playerCount >= maxPlayers / 2 ? '#FBBF24' : '#6EE7B7';
         ctx.fillText(countText, indicatorX, countY);
 
-        // 2. Draw Countdown Timer
+        // Timer
         const timerValue = Math.max(0, gameTimerSeconds.value);
-        const timerText = timerValue.toFixed(1); // 1 decimal place
-
+        const timerText = timerValue.toFixed(1);
         ctx.font = 'bold 24px monospace';
-        
-        const timerY = countY + 30; // 30 pixels below player count
-
+        const timerY = countY + 30;
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 4;
         ctx.strokeText(timerText, indicatorX, timerY);
-
-        if (timerValue > 10) {
-            ctx.fillStyle = '#6EE7B7'; // Green
-        } else if (timerValue > 5) {
-            ctx.fillStyle = '#FBBF24'; // Yellow
-        } else {
-            ctx.fillStyle = '#F87171'; // Red (urgent)
-        }
+        ctx.fillStyle = timerValue > 10 ? '#6EE7B7' : timerValue > 5 ? '#FBBF24' : '#F87171';
         ctx.fillText(timerText, indicatorX, timerY);
-        
         ctx.restore();
     }
 };
