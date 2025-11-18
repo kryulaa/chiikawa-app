@@ -1,23 +1,8 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/game.html",
-      "destination": "/game.html"
-    },
-    {
-      "source": "/game",
-      "destination": "/game.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/game.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "src": "/game.html",
+      "dest": "/game.html"
     }
   ]
-}
+}   
