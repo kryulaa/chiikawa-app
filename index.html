@@ -10,7 +10,7 @@
     <div class="overlay"></div>
     
     <div id="main-content">
-        <div class="game-container" id="game-viewport"> 
+        <div class="game-container" id="login-screen"> 
             
             <div class="game-header">
                 <h1 class="game-title">Chiikawa Nature</h1>
@@ -86,13 +86,11 @@
 
     <script>
         // DOM Elements
-        // Renamed 'login-screen' to 'game-viewport' for clarity, though it's the same element.
-        const gameViewport = document.getElementById('game-viewport'); 
+        const loginScreen = document.getElementById('login-screen'); // Renamed ID back to original for consistency
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const forgotPasswordForm = document.getElementById('forgot-password-form');
         const successMessage = document.getElementById('success-message');
-        const overlay = document.querySelector('.overlay');
         
         // Toggle Links and Buttons
         const showRegisterLink = document.getElementById('show-register');
@@ -119,37 +117,12 @@
         backToLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
         
         /**
-         * Function to load your game content in fullscreen after login.
-         * NOW uses Dynamic Import for main.js.
+         * Function to load your game content by redirecting to the game page.
          */
         function loadGame() {
-            // 1. Clean the environment for full screen
-            if (overlay) overlay.remove(); 
-            
-            // 2. Apply full-screen class to body and container
-            document.body.classList.add('game-active');
-            gameViewport.classList.add('full-screen');
-            
-            // 3. Remove login-specific elements by clearing container content
-            gameViewport.innerHTML = ''; 
-
-            // 4. Inject the canvas element (using 1280x720 aspect ratio)
-            gameViewport.innerHTML = `
-                <canvas id="game-canvas" width="1280" height="720"></canvas>
-            `;
-            
-            // 5. Use Dynamic Import to load the main.js module
-            // This is the robust solution for loading modules on deployment platforms like Vercel.
-            import('./main.js')
-                .then(module => {
-                    console.log('Game module loaded successfully!');
-                    // If main.js has an init function, you would call it here:
-                    // module.init(); 
-                })
-                .catch(error => {
-                    console.error('Failed to load main.js module:', error);
-                    alert('An error occurred loading the game resources.');
-                });
+            // New logic: Redirect to a separate game page file.
+            // This requires you to create a file named 'game.html' in your root directory.
+            window.location.href = './game.html'; 
         }
 
         // Login Button Logic - Calls loadGame() on success
@@ -159,7 +132,7 @@
             
             if (username && password) {
                 // *** Simulate Server success ***
-                alert(`Welcome back, ${username}! Starting your adventure...`);
+                alert(`Welcome back, ${username}! Redirecting to adventure...`);
                 loadGame(); 
             } else {
                 alert('Please fill in all fields to continue your adventure!');
