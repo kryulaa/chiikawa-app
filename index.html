@@ -1,13 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chiikawa</title>
-    <link rel="stylesheet" href="/styles.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiikawa Nature Adventure</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="overlay"></div>
+    
+    <div id="main-content">
+        <div class="game-container" id="login-screen">
+            
+            <div class="game-header">
+                <h1 class="game-title">Chiikawa Nature</h1>
+                <p class="game-subtitle">Join the forest adventure with your friends!</p>
+            </div>
+            
+            <div class="form-container">
+                <div id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" placeholder="Enter your username">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password">
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#" id="forgot-password-link">Forgot Password?</a>
+                    </div>
+                    <button class="btn btn-primary" id="login-btn">Login to Adventure</button>
+                    <div class="form-toggle">
+                        New to Chiikawa World? <a href="#" id="show-register">Create Account</a>
+                    </div>
+                </div>
+                
+                <div id="register-form" class="hidden">
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" placeholder="Choose a username">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" placeholder="Create a password">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">Confirm Password</label>
+                        <input type="password" id="register-confirm-password" placeholder="Confirm your password">
+                    </div>
+                    <button class="btn btn-primary" id="register-btn">Start Adventure</button>
+                    <div class="form-toggle">
+                        Already have an account? <a href="#" id="show-login">Login Here</a>
+                    </div>
+                </div>
+                
+                <div id="forgot-password-form" class="hidden">
+                    <div class="message">
+                        Enter your email address and we'll send you a link to reset your password.
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-email">Email</label>
+                        <input type="email" id="forgot-email" placeholder="Enter your email">
+                    </div>
+                    <button class="btn btn-primary" id="reset-password-btn">Send Reset Link</button>
+                    <div class="form-toggle">
+                        Remember your password? <a href="#" id="back-to-login">Back to Login</a>
+                    </div>
+                </div>
+                
+                <div id="success-message" class="message success hidden">
+                    Password reset link sent! Please check your email.
+                </div>
+            </div>
+            
+            <div class="game-footer">
+                <p></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginScreen = document.getElementById('login-screen'); 
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
+        const successMessage = document.getElementById('success-message');
+        const overlay = document.querySelector('.overlay');
+        
+        // Toggle Links and Buttons
+        const showRegisterLink = document.getElementById('show-register');
+        const showLoginLink = document.getElementById('show-login');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const backToLoginLink = document.getElementById('back-to-login');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const resetPasswordBtn = document.getElementById('reset-password-btn');
+        
+        // Function to switch forms
+        function showForm(formToShow) {
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            forgotPasswordForm.classList.add('hidden');
+            successMessage.classList.add('hidden');
+            formToShow.classList.remove('hidden');
+        }
+
+        // Event Listeners for switching forms
+        showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showForm(registerForm); });
+        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
+        forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); showForm(forgotPasswordForm); });
+        backToLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
+        
+        /**
+         * Function to load your game content in fullscreen after login.
+         */
+        function loadGame() {
+            // 1. Clean the environment for full screen
+            if (overlay) overlay.remove(); // Remove the white overlay
+            
+            // 2. Apply full-screen class to body and container
+            document.body.classList.add('game-active');
+            loginScreen.classList.add('full-screen');
+            
+            // 3. Remove login-specific elements (header, footer, forms) by clearing container content
+            loginScreen.innerHTML = ''; 
+
+            // 4. Inject the canvas element (using 1280x720 aspect ratio)
+            loginScreen.innerHTML = `
+                <canvas id="game-canvas" width="1280" height="720"></canvas>
+            `;
+            
+            // 5. Dynamically load the main.js module
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = './main.js';
+            document.body.appendChild(script);
+        }
+
+        // Login Button Logic - Calls loadGame() on success
+        loginBtn.addEventListener('click', function() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (username && password) {
+                // *** Simulate Server success ***
+                alert(`Welcome back, ${username}! Starting your adventure...`);
+                loadGame(); 
+            } else {
+                alert('Please fill in all fields to continue your adventure!');
+            }
+        });
+        
+        // Register Button Logic
+        registerBtn.addEventListener('click', function() {
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            
+            if (username && email && password && confirmPassword) {
+                if (password === confirmPassword) {
+                    alert(`Welcome to Chiikawa Nature, ${username}! Your account is ready!`);
+                    showForm(loginForm); 
+                } else {
+                    alert('Passwords do not match. Please try again!');
+                }
+            } else {
+                alert('Please fill in all fields to join the adventure!');
+            }
+        });
+        
+        // Reset Password Button Logic
+        resetPasswordBtn.addEventListener('click', function() {
+            const email = document.getElementById('forgot-email').value;
+            
+            if (email) {
+                showForm(successMessage);
+                setTimeout(() => {
+                    showForm(loginForm);
+                    document.getElementById('forgot-email').value = '';
+                }, 5000);
+            } else {
+                alert('Please enter your email address to reset your password');
+            }
+        });
+    </script>
+</body>
 </html>
