@@ -10,7 +10,7 @@
     <div class="overlay"></div>
     
     <div id="main-content">
-        <div class="game-container" id="login-screen">
+        <div class="game-container" id="login-screen"> 
             
             <div class="game-header">
                 <h1 class="game-title">Chiikawa Nature</h1>
@@ -86,12 +86,11 @@
 
     <script>
         // DOM Elements
-        const loginScreen = document.getElementById('login-screen'); 
+        const loginScreen = document.getElementById('login-screen'); // Renamed ID back to original for consistency
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const forgotPasswordForm = document.getElementById('forgot-password-form');
         const successMessage = document.getElementById('success-message');
-        const overlay = document.querySelector('.overlay');
         
         // Toggle Links and Buttons
         const showRegisterLink = document.getElementById('show-register');
@@ -118,29 +117,12 @@
         backToLoginLink.addEventListener('click', (e) => { e.preventDefault(); showForm(loginForm); });
         
         /**
-         * Function to load your game content in fullscreen after login.
+         * Function to load your game content by redirecting to the game page.
          */
         function loadGame() {
-            // 1. Clean the environment for full screen
-            if (overlay) overlay.remove(); // Remove the white overlay
-            
-            // 2. Apply full-screen class to body and container
-            document.body.classList.add('game-active');
-            loginScreen.classList.add('full-screen');
-            
-            // 3. Remove login-specific elements (header, footer, forms) by clearing container content
-            loginScreen.innerHTML = ''; 
-
-            // 4. Inject the canvas element (using 1280x720 aspect ratio)
-            loginScreen.innerHTML = `
-                <canvas id="game-canvas" width="1280" height="720"></canvas>
-            `;
-            
-            // 5. Dynamically load the main.js module
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = './main.js';
-            document.body.appendChild(script);
+            // New logic: Redirect to a separate game page file.
+            // This requires you to create a file named 'game.html' in your root directory.
+            window.location.href = '/game.html';  
         }
 
         // Login Button Logic - Calls loadGame() on success
@@ -150,7 +132,7 @@
             
             if (username && password) {
                 // *** Simulate Server success ***
-                alert(`Welcome back, ${username}! Starting your adventure...`);
+                alert(`Welcome back, ${username}! Redirecting to adventure...`);
                 loadGame(); 
             } else {
                 alert('Please fill in all fields to continue your adventure!');

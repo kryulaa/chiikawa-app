@@ -1,13 +1,15 @@
+// Change './src/' to '/src/' for all import paths
+
 import { Gameloop } from './src/core/Gameloop.js';
 import { update, currentCommandAnimation, commandAnimationTime } from './src/game/GameLoopLogic.js';
 import { draw } from './src/ui/DrawLogic.js';
 import { setupPlayerName } from './src/multiplayer/PlayerSetup.js';
 
 // Import and execute setup modules (no assignment needed)
-import './src/ui/CanvasSetup.js';
-import './src/game/GameObjects.js';
-import './src/multiplayer/Networking.js';
-import './src/game/InputHandler.js'; 
+import '/src/ui/CanvasSetup.js'; // FIX 5
+import '/src/game/GameObjects.js'; // FIX 6
+import '/src/multiplayer/Networking.js'; // FIX 7
+import '/src/game/InputHandler.js'; // FIX 8
 
 
 // ---------------------------
