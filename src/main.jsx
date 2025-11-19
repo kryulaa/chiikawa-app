@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Login from "./pages/Login.jsx";
 import "../styles.css";
+import("/src/main.js");
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
