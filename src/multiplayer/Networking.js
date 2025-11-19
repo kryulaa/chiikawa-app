@@ -1,4 +1,4 @@
-import { supabase } from '../../public/game/supabaseClient.js';
+import { supabase } from '../../supabaseClient.js';
 import { myId, myName, otherPlayers, chatBubble } from './PlayerSetup.js';
 
 let lastChatTimestamp = null;

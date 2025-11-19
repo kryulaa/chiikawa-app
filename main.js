@@ -1,16 +1,16 @@
 // ---------------------------
 // IMPORTS (relative to main.js at project root)
 // ---------------------------
-import { Gameloop } from './src/Gameloop.js';
-import { update, currentCommandAnimation, commandAnimationTime } from './src/GameLoopLogic.js';
-import { draw } from './src/DrawLogic.js';
-import { setupPlayerName } from './src/PlayerSetup.js';
+import { Gameloop } from './src/core/Gameloop.js';
+import { update, currentCommandAnimation, commandAnimationTime } from './src/game/GameLoopLogic.js';
+import { draw } from './src/ui/DrawLogic.js';
+import { setupPlayerName } from './src/multiplayer/PlayerSetup.js';
 
 // Import and execute setup modules (no assignment needed)
-import './src/CanvasSetup.js';
-import './src/GameObjects.js';
-import './src/Networking.js';
-import './src/InputHandler.js';
+import './src/ui/CanvasSetup.js';
+import './src/game/GameObjects.js';
+import './src/multiplayer/Networking.js';
+import './src/game/InputHandler.js';
 
 // ---------------------------
 // STATE MUTATION BRIDGE
