@@ -16,17 +16,13 @@ import './src/game/InputHandler.js';
 // This bridge function allows InputHandler.js to safely modify the mutable state 
 // objects in GameLoopLogic.js.
 window.setCommandAnimation = (command, time) => {
-  currentCommandAnimation.value = command;
-  commandAnimationTime.value = time;
+    currentCommandAnimation.value = command;
+    commandAnimationTime.value = time;
 };
 
-export function startGame(canvas) {
-    const ctx = setupCanvas(canvas); // setup canvas and get ctx
 
-    const gameLoop = new Gameloop(
-        (delta) => update(delta),
-        () => draw(ctx, canvas) // pass ctx and canvas here
-    );
-
-    setupPlayerName(gameLoop);
-}
+// ---------------------------
+// GAME LOOP AND START
+// ---------------------------
+const gameLoop = new Gameloop(update, draw);
+setupPlayerName(gameLoop);
