@@ -9,6 +9,6 @@ export class Camera {
 
   follow(target) {
     this.position.x = target.x - this.canvasWidth / 2 + target.w / 2;
-    this.position.y = target.y - this.canvasHeight / 2 + target.h / 2;
+    this.position.y = target.y - this.canvasHeight / 2 + target.h / 0.85;
   }
 }
